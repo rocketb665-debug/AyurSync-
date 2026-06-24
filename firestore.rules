@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required) - The user's unique ID
+    //   - email: string (required) - The user's email address
+    //   - displayName: string (optional) - The user's display name
+    //   - display_name: string (optional) - The user's display name (used in onboarding)
+    //   - age: number (optional) - The user's age
+    //   - gender: string (optional) - The user's gender
+    //   - primaryGoal: string (optional) - The user's primary health goal
+    //   - account_status: string (optional) - The user's account status
+    //   - createdAt: timestamp (required) - When the account was created
+    //   - updatedAt: timestamp (optional) - When the account was last updated
+    //
+    // Sub-collection: users/{userId}/health_metadata
+    // Document ID: conditions_pointer
+    // Fields:
+    //   - pointer: boolean (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((request.auth.token.email == "rocketb665@gmail.com" && request.auth.token.email_verified == true) ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.email is string &&
+             data.createdAt is timestamp;
+    }
+
+    // Rules
+    match /users/{userId} {
+      // Allow user to read and manage their own profile
+      allow read, write: if isOwner(userId);
+
+      // Allow access to sub-collections
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /medical_records/{recordId} {
+      allow read, delete: if isAuthenticated() && request.auth.uid == resource.data.uid;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.uid;
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.uid && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /daily_metrics/{metricId} {
+      allow read, delete: if isAuthenticated() && request.auth.uid == resource.data.uid;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.uid;
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.uid && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /recycle_bin_notices/{noticeId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

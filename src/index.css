@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-sage-primary: #2D5A27;
+  --color-sage-light: #F0F4EF;
+  --color-sage-accent: #4A7C44;
+  
+  --font-handwriting: "Caveat", cursive;
+  
+  --radius-xl: 16px;
+}
+
+body {
+  background-color: white;
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100vw;
+  max-width: 100%;
+}
+
+@keyframes flutter {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(0.5deg) translateY(-1px); }
+  75% { transform: rotate(-0.5deg) translateY(1px); }
+}
+
+.animate-flutter {
+  animation: flutter 3s ease-in-out infinite;
+}
+
+#root {
+  width: 100%;
+}

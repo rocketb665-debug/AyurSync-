@@ -1,0 +1,6 @@
+{
+  "name": "AyurSync",
+  "description": "A premium Health-Tech application for holistic wellness and Ayurvedic synchronization.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

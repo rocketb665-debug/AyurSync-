@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "The core user profile document.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID" },
+        "email": { "type": "string", "format": "email", "description": "The user's email address" },
+        "displayName": { "type": "string", "description": "The user's display name" },
+        "display_name": { "type": "string", "description": "The user's display name (used in onboarding)" },
+        "age": { "type": "number", "description": "The user's age" },
+        "gender": { "type": "string", "description": "The user's gender" },
+        "primaryGoal": { "type": "string", "description": "The user's primary health goal" },
+        "account_status": { "type": "string", "enum": ["incomplete_onboarding", "active"], "description": "The user's account status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the account was created" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "When the account was last updated" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "HealthMetadata": {
+      "title": "Health Metadata",
+      "description": "Sub-collection for health metadata.",
+      "type": "object",
+      "properties": {
+        "pointer": { "type": "boolean", "description": "A pointer for health metadata." }
+      },
+      "required": ["pointer"]
+    },
+    "VitalMetrics": {
+      "title": "Vital Metrics",
+      "description": "Real-time health vitals for the user.",
+      "type": "object",
+      "properties": {
+        "bloodSugar": { "type": "number", "description": "Blood sugar in mg/dL" },
+        "bloodPressure": { "type": "string", "description": "Blood pressure (e.g. 120/80)" },
+        "heartRate": { "type": "number", "description": "Heart rate in bpm" },
+        "steps": { "type": "number", "description": "Daily step count" },
+        "hydration": { "type": "number", "description": "Hydration in ml" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "When vitals were last updated" }
+      },
+      "required": ["bloodSugar", "bloodPressure", "heartRate", "updatedAt"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "An announcement or update for the community.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID of the notice" },
+        "title": { "type": "string", "description": "Title of the notice" },
+        "content": { "type": "string", "description": "Content/Body of the notice" },
+        "category": { "type": "string", "enum": ["Update", "Alert", "Activity"], "description": "Category of the notice" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the notice was created" },
+        "authorId": { "type": "string", "description": "UID of the admin who created the notice" }
+      },
+      "required": ["title", "content", "category", "timestamp"]
+    },
+    "ChatConsultation": {
+      "title": "Chat Consultation",
+      "description": "A record of a consultation with the Rishi Council or a Specialist.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "specialistId": { "type": "string", "description": "ID of the specialist or 'council'" },
+        "specialistName": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "memoryCard": { "type": "string", "description": "100-word summary of health status updated every 5 messages" },
+        "snapshot": { "type": "object", "description": "Optional snapshot of debate data" }
+      },
+      "required": ["userId", "specialistId", "updatedAt", "createdAt"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "A single message in a consultation.",
+      "type": "object",
+      "properties": {
+        "sender": { "type": "string", "enum": ["User", "Council", "Specialist"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "debateData": { "type": "object", "description": "Optional debate data for snapshots" }
+      },
+      "required": ["sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "The user's profile document."
+    },
+    "/users/{userId}/health_metadata/conditions_pointer": {
+      "schema": "HealthMetadata",
+      "description": "Sub-collection for health metadata."
+    },
+    "/users/{userId}/vitals/current": {
+      "schema": "VitalMetrics",
+      "description": "The user's current vital signs."
+    },
+    "/users/{userId}/consultations/{consultationId}": {
+      "schema": "ChatConsultation",
+      "description": "History of user consultations."
+    },
+    "/users/{userId}/consultations/{consultationId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages within a consultation."
+    },
+    "/notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Collection of community notices."
+    },
+    "/recycle_bin_notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Collection of community notices that have been recycled."
+    }
+  }
+}
